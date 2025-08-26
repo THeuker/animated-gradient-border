@@ -1,7 +1,45 @@
 import 'package:flutter/material.dart';
 
 class AnimatedGradientBorder extends StatefulWidget {
-  const AnimatedGradientBorder({super.key});
+  const AnimatedGradientBorder({
+    super.key,
+    this.radius = 30,
+    this.blurRadius = 30,
+    this.spreadRadius = 1,
+    this.topColor = Colors.red,
+    this.bottomColor = Colors.blue,
+    this.glowOpacity = 1,
+    this.duration = const Duration(seconds: 2),
+    this.thickness = 3,
+    this.child,
+  });
+
+  // The radius of the border
+  final double radius;
+
+  // Blur radius of the glow effect
+  final double blurRadius;
+
+  // Spread radius of the glow effect
+  final double spreadRadius;
+
+  // The color of the top of the gradient
+  final Color topColor;
+
+  // The color of the bottom of the gradient
+  final Color bottomColor;
+
+  // The opacity of the glow effect
+  final double glowOpacity;
+
+  // The duration of the animation. The default is 500 milliseconds
+  final Duration duration;
+
+  // The thickness of the border
+  final double thickness;
+  
+  // The child widget
+  final Widget? child;
 
   @override
   State<AnimatedGradientBorder> createState() => _AnimatedGradientBorderState();
@@ -18,7 +56,7 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder> with Si
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: Duration(milliseconds: widget.duration.inMilliseconds),
       vsync: this,
     );
 
@@ -65,25 +103,90 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder> with Si
 
   @override
   Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: _CenterCutPath(radius: 20, thickness: 2),
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          return Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(20)
-              ),
-              gradient: LinearGradient(
-                begin: _tlAlignAnim.value,
-                end: _brAlignAnim.value,
-                colors: const [Colors.red, Colors.blue],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            widget.child != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(widget.radius),
+                    ),
+                    child: widget.child,
+                  )
+                : const SizedBox.shrink(),
+            ClipPath(
+              clipper: _CenterCutPath(radius: widget.radius, thickness: widget.thickness),
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  return Stack(
+                    children: [
+                      Opacity(
+                        opacity: widget.glowOpacity,
+                        child: Container(
+                          width: constraints.maxWidth,
+                          height: constraints.maxHeight,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(widget.radius),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: widget.topColor,
+                                offset: const Offset(0, 0),
+                                blurRadius: widget.blurRadius,
+                                spreadRadius: widget.spreadRadius,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: _brAlignAnim.value,
+                        child: Opacity(
+                          opacity: widget.glowOpacity,
+                          child: Container(
+                            width: constraints.maxWidth * 0.95,
+                            height: constraints.maxHeight * 0.95,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(widget.radius),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: widget.bottomColor,
+                                  offset: const Offset(0, 0),
+                                  blurRadius: widget.blurRadius,
+                                  spreadRadius: widget.spreadRadius,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(widget.radius)
+                          ),
+                          gradient: LinearGradient(
+                            begin: _tlAlignAnim.value,
+                            end: _brAlignAnim.value,
+                            colors: [widget.topColor, widget.bottomColor],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
               ),
             ),
-          );
-        }
-      ),
+          ],
+        );
+      }
     );
   }
 }

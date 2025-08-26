@@ -34,12 +34,31 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: SizedBox(
           width: 300,
           height: 300,
-          child: AnimatedGradientBorder(),
+          child: AnimatedGradientBorder(
+            child: Center(
+              child: Container(
+                color: Colors.white,
+                width: double.infinity,
+                height: double.infinity,
+                child: const Center(
+                  child: Text(
+                    'Animated Gradient Border',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
